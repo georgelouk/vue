@@ -13,34 +13,55 @@
 
     <div id="app">
 
-      <h1>{{ message }}</h1>
 
-      <img v-bind:src="imgSrc" :alt="message" width="150" height="150">
-      <p>{{ description }}</p>
-      <div v-for="(item, myIndex) in products" id="display-list" class="row d-flex mb-3 align-items-center">
-      <div class="col-sm-4">
-        <img class="img-fluid d-block" :src="item.image" alt="name">
-      </div>
-      <div class="col">
-        <p>{{item.myIndex}}</p>
-        <h3 class="text-info">{{item.name}}</h3>
-        <p class="mb-0">{{item.description}}</p>
-        <div class="h5 float-right">{{item.price}}</div>     
+
+    <input v-model="max" type="number" class="form-control" id="max-price" aria-describedby="maxH" />      
+    <div id="maxHelp" class="form-text">Set the maximum price to: {{maximus}}</div>
+
+
+    <input type="range" class="form-range" min="1" max="150" v-model="max">
+  
+    <textarea v-model="maximus"></textarea>
+
+    <input type="checkbox" class="form-check-input" v-model="maximus" true-value="15" false-value="0">
+
+    <input type="checkbox" class="form-check-input" v-model="checking">
+
+    <input type="checkbox" class="form-check-input" v-model="withValue" true-value="One" false-value="Two">
+    <div class="form-text">{{withValue}}</div>
+
+    <input type="checkbox" value="first" class="form-check-input" v-model="myCheckboxes">
+    <input type="checkbox" value="second" class="form-check-input" v-model="myCheckboxes">
+    <input type="checkbox" value="third" class="form-check-input" v-model="myCheckboxes">
+    <div class="form-text">{{myCheckboxes}}</div>
+
+      <template v-for="(item, myIndex) in products">
+        <div v-if="item.price < Number(max)" id="display-list" class="row d-flex mb-3 align-items-center" :key="item.id">
+          <div class="col-sm-4">
+            <img class="img-fluid d-block" :src="item.image" alt="name">
+          </div>
+          <div class="col">
+            <p>{{myIndex + 1}}</p>
+            <h3 class="text-info">{{item.name}}</h3>
+            <p class="mb-0">{{item.description}}</p>
+            <div class="h5 float-right">{{item.price}}</div>     
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-
-
-
-
-
+      </template>
    
+
 
     <script>
 
         const App = {
           data() {
             return {
+              checking:true,
+              withValue: null,
+              myCheckboxes: [],
+              maximus:5,
+              max: 20,
               message: 'Bamboo Thermal Ski Coat',
               description: 'Hello my freind',
               imgSrc: 'test.png',
