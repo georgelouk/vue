@@ -13,14 +13,11 @@
 
     <div id="app">
 
+<nav class="navbar navbar-light sticky-top mr-3">
 
-
+<!--
     <input v-model="max" type="number" class="form-control" id="max-price" aria-describedby="maxH" />      
     <div id="maxHelp" class="form-text">Set the maximum price to: {{maximus}}</div>
-
-
-    <input type="range" class="form-range" min="1" max="150" v-model="max">
-  
     <textarea v-model="maximus"></textarea>
 
     <input type="checkbox" class="form-check-input" v-model="maximus" true-value="15" false-value="0">
@@ -34,20 +31,53 @@
     <input type="checkbox" value="second" class="form-check-input" v-model="myCheckboxes">
     <input type="checkbox" value="third" class="form-check-input" v-model="myCheckboxes">
     <div class="form-text">{{myCheckboxes}}</div>
+-->
 
-      <template v-for="(item, myIndex) in products">
-        <div v-if="item.price < Number(max)" id="display-list" class="row d-flex mb-3 align-items-center" :key="item.id">
+    <span class="font-weight-bold" :class="totalColor">{{currency(cartTotal)}}</span>
+    <button 
+    :style="warningObject"
+    class="btn ml-3"
+      @click="displayCart = !displayCart"
+      :class="cartBtn"
+    id="cartDropdown"
+    aria-haspopup="true"
+    aria-expanded="false"
+      >
+
+    <i class="fas fa-shopping-cart mr-1"></i>
+        {{cart.length}}
+    </button>
+
+    <div v-if="displayCart" class="list-group" aria-labelledby="cardDropdown">
+      <div v-for="(item, index) in cart" :key="index" class="list-group-item d-flex justify-content-between">
+        <div>{{item.name}}</div>
+        <div class="ml-3 font-weight-bold">{{currency(item.price)}}</div>
+      </div>
+    </div>
+
+
+    <input type="range" class="form-range" min="1" max="150" v-model.number="max">
+    <div class="badge bg-success ml-3">results : {{FilteredProds.length}}</div>
+</nav>
+
+<btn label="Go" type="danger"></btn>
+<btn label="Go2" type="danger"></btn>
+<btn label="Go3" type="success"></btn>
+
+      <template v-for="(item, myIndex) in FilteredProds">
+        <!-- <div v-if="item.price < Number(max)" id="display-list" class="row d-flex mb-3 align-items-center" :key="item.id"> useless meta to filtro-->
           <div class="col-sm-4">
             <img class="img-fluid d-block" :src="item.image" alt="name">
           </div>
           <div class="col">
             <p>{{myIndex + 1}}</p>
+            <button :style="borderStyle" @click="addToCart(item)" class="btn btn-success">+</button>
             <h3 class="text-info">{{item.name}}</h3>
             <p class="mb-0">{{item.description}}</p>
-            <div class="h5 float-right">{{item.price}}</div>     
+            <div class="h5 float-right">{{currency(item.price)}}</div>     
             </div>
           </div>
-        </div>
+        <!-- </div> -->
       </template>
    
 
@@ -57,6 +87,18 @@
         const App = {
           data() {
             return {
+              show: true,
+              btnColor: 'btn-success',
+              totalColor: 'text-secondary',
+              salesBtn: 'btn-secondary',
+              warningObject: {
+                backgroundColor: 'auto',
+                border: 'transparent'
+              },
+              borderStyle: {
+                borderRadius: '50%', 
+                border: '3px solid darkgreen'
+              },
               checking:true,
               withValue: null,
               myCheckboxes: [],
@@ -65,39 +107,73 @@
               message: 'Bamboo Thermal Ski Coat',
               description: 'Hello my freind',
               imgSrc: 'test.png',
-              products : [
-            {
-              "id": "532",
-              "name": "Slicker Jacket",
-              "description": "Wind and rain are no match for our organic bamboo slicker jacket for men and women. Triple stitched seams, zippered pockets, and a stay-tight hood are just a few features of our best-selling jacket.",
-              "price": "125",
-              "image_title": "slicker-jacket_lynda_29941",
-              "image": "https://hplussport.com/wp-content/uploads/2016/12/slicker-jacket_LYNDA_29941.jpg"
-            },
-            {
-              "id": "530",
-              "name": "Bamboo Thermal Ski Coat",
-              "description": "You'll be the most environmentally conscious skier on the slopes - and the most stylish - wearing our fitted bamboo thermal ski coat, made from organic bamboo with recycled plastic down filling.",
-              "price": "99",
-              "image": "https://hplussport.com/wp-content/uploads/2016/12/ski-coat_LYNDA_29940.jpg"
-            },
-            {
-              "id": "516",
-              "name": "Unisex Thermal Vest",
-              "description": "Our thermal vest, made from organic bamboo with recycled plastic down filling, is a favorite of both men and women. You'll help the environment, and have a wear-easy piece for many occasions.",
-              "price": "95",
-              "image": "https://hplussport.com/wp-content/uploads/2016/12/unisex-thermal-vest_LYNDA_29944.jpg"
+              products : [],
+              cart: [],
+              displayCart: false
             }
-          ]
+          },
+          created() {
+            fetch("https://hplussport.com/api/products/order/price").then(response => response.json()).then (data => { this.products = data;})
+          },
+          computed: {
+            cartBtn() {
+              return {
+                'btn-secondary' : this.cartTotal <= 100,
+                'btn-success' : this.cartTotal > 100,
+                'btn-danger' : this.cartTotal > 200
+              }
+            },
+            FilteredProds() {
+              return this.products.filter( item => (item.price < this.max))
+            },
+            cartTotal() {
+              return this.cart.reduce((inc, item) => Number(item.price) + inc, 0)
+            }
+          },
+          methods: {
+            transitionColor(el) {
+              this.totalColor = 'text-danger';
+            },
+            resetColor() {
+              this.totalColor = 'text-secondary'; 
+            },
+            addToCart(product) {
+              this.cart.push(product);
+              if (this.cartTotal >=100) {this.salesBtn = 'btn-success'}
+            },
+            currency(price) {
+              return `$${Number.parseFloat(price).toFixed(2)}`;
             }
           }
+          
         }
 
-       
-      Vue.createApp(App).mount('#app')
+        app=Vue.createApp(App);
 
+        app.component('btn', {
+          props: ['label', 'type'],
+          template: `<button :class="['btn','btn-' + (type || 'secondary')]">{{label}}</button>`
+        });
 
+        app.component('btnGroup', {
+          props: ['label', 'type'],
+          template: `<div class="btn-group" role="group" aria-label="label">
+            <btn v-for="item in items" :label="item.label" :type="item.type"></btn>
+          </div>`
+        });
+      
+        app.mount('#app');
+
+      
 </script>
 
 </body>
+<style>
+  .dropdown-enter-active, .dropdown-leave-active {
+    transition: all, 5s ease-in-out;
+  }
+  .dropdown-enter-from, .dropdown-enter-to {
+   opacity:0; transform(-100px);
+  }
+</style>
 </html>
